@@ -1,3 +1,4 @@
+use clap::Parser;
 use crossterm::{
     event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode},
     execute,
@@ -122,10 +123,21 @@ fn read_options_chain<P: AsRef<Path>>(path: P) -> Result<OptionsChain, Box<dyn E
     Ok(options_chain)
 }
 
+/// Command line arguments
+#[derive(Parser, Debug)]
+#[clap(author, version, about = "Options chain viewer")]
+struct Args {
+    /// Path to the options chain JSON file
+    #[clap(default_value = "options_chain.json")]
+    filename: String,
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
-    // Read the options chain from a JSON file
-    // You can change the path to your JSON file
-    let options_chain = read_options_chain("options_chain.json")?;
+    // Parse command line arguments
+    let args = Args::parse();
+
+    // Read the options chain from the specified JSON file
+    let options_chain = read_options_chain(&args.filename)?;
 
     // Setup terminal
     enable_raw_mode()?;
