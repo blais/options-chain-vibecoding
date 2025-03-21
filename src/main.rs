@@ -128,7 +128,7 @@ fn read_options_chain<P: AsRef<Path>>(path: P) -> Result<OptionsChain, Box<dyn E
 #[clap(author, version, about = "Options chain viewer")]
 struct Args {
     /// Path to the options chain JSON file
-    #[clap(default_value = "options_chain.json")]
+    #[clap(default_value = "sample-options-chain.json")]
     filename: String,
 }
 

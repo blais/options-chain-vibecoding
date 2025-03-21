@@ -284,4 +284,264 @@
             "openInterest": 4352,
             "greeks": {
               "delta": -0.49,
-              "gamma":
+              "gamma": 0.054,
+              "theta": -0.092,
+              "vega": 0.384,
+              "rho": -0.091
+            }
+          }
+        },
+        {
+          "strike": 175.0,
+          "call": {
+            "symbol": "AAPL250516C00175000",
+            "bid": 5.95,
+            "ask": 6.25,
+            "bidSize": 62,
+            "askSize": 58,
+            "volume": 2085,
+            "openInterest": 8325,
+            "greeks": {
+              "delta": 0.41,
+              "gamma": 0.058,
+              "theta": -0.102,
+              "vega": 0.405,
+              "rho": 0.072
+            }
+          },
+          "put": {
+            "symbol": "AAPL250516P00175000",
+            "bid": 6.45,
+            "ask": 6.65,
+            "bidSize": 43,
+            "askSize": 52,
+            "volume": 1535,
+            "openInterest": 5623,
+            "greeks": {
+              "delta": -0.59,
+              "gamma": 0.058,
+              "theta": -0.098,
+              "vega": 0.405,
+              "rho": -0.102
+            }
+          }
+        },
+        {
+          "strike": 180.0,
+          "call": {
+            "symbol": "AAPL250516C00180000",
+            "bid": 3.85,
+            "ask": 4.15,
+            "bidSize": 67,
+            "askSize": 61,
+            "volume": 1845,
+            "openInterest": 7125,
+            "greeks": {
+              "delta": 0.32,
+              "gamma": 0.057,
+              "theta": -0.098,
+              "vega": 0.392,
+              "rho": 0.059
+            }
+          },
+          "put": {
+            "symbol": "AAPL250516P00180000",
+            "bid": 9.35,
+            "ask": 9.65,
+            "bidSize": 47,
+            "askSize": 58,
+            "volume": 1325,
+            "openInterest": 4823,
+            "greeks": {
+              "delta": -0.68,
+              "gamma": 0.057,
+              "theta": -0.095,
+              "vega": 0.392,
+              "rho": -0.112
+            }
+          }
+        }
+      ]
+    },
+    {
+      "date": "2025-06-20",
+      "options": [
+        {
+          "strike": 160.0,
+          "call": {
+            "symbol": "AAPL250620C00160000",
+            "bid": 16.85,
+            "ask": 17.15,
+            "bidSize": 32,
+            "askSize": 28,
+            "volume": 645,
+            "openInterest": 3124,
+            "greeks": {
+              "delta": 0.71,
+              "gamma": 0.028,
+              "theta": -0.058,
+              "vega": 0.365,
+              "rho": 0.142
+            }
+          },
+          "put": {
+            "symbol": "AAPL250620P00160000",
+            "bid": 2.85,
+            "ask": 3.15,
+            "bidSize": 24,
+            "askSize": 31,
+            "volume": 485,
+            "openInterest": 1987,
+            "greeks": {
+              "delta": -0.29,
+              "gamma": 0.028,
+              "theta": -0.052,
+              "vega": 0.365,
+              "rho": -0.098
+            }
+          }
+        },
+        {
+          "strike": 165.0,
+          "call": {
+            "symbol": "AAPL250620C00165000",
+            "bid": 13.25,
+            "ask": 13.55,
+            "bidSize": 38,
+            "askSize": 36,
+            "volume": 875,
+            "openInterest": 4325,
+            "greeks": {
+              "delta": 0.61,
+              "gamma": 0.035,
+              "theta": -0.068,
+              "vega": 0.425,
+              "rho": 0.128
+            }
+          },
+          "put": {
+            "symbol": "AAPL250620P00165000",
+            "bid": 3.95,
+            "ask": 4.25,
+            "bidSize": 28,
+            "askSize": 34,
+            "volume": 625,
+            "openInterest": 2487,
+            "greeks": {
+              "delta": -0.39,
+              "gamma": 0.035,
+              "theta": -0.065,
+              "vega": 0.425,
+              "rho": -0.108
+            }
+          }
+        },
+        {
+          "strike": 170.0,
+          "call": {
+            "symbol": "AAPL250620C00170000",
+            "bid": 10.05,
+            "ask": 10.35,
+            "bidSize": 47,
+            "askSize": 44,
+            "volume": 1125,
+            "openInterest": 5475,
+            "greeks": {
+              "delta": 0.51,
+              "gamma": 0.042,
+              "theta": -0.075,
+              "vega": 0.465,
+              "rho": 0.115
+            }
+          },
+          "put": {
+            "symbol": "AAPL250620P00170000",
+            "bid": 5.75,
+            "ask": 6.05,
+            "bidSize": 34,
+            "askSize": 41,
+            "volume": 845,
+            "openInterest": 3265,
+            "greeks": {
+              "delta": -0.49,
+              "gamma": 0.042,
+              "theta": -0.072,
+              "vega": 0.465,
+              "rho": -0.118
+            }
+          }
+        },
+        {
+          "strike": 175.0,
+          "call": {
+            "symbol": "AAPL250620C00175000",
+            "bid": 7.35,
+            "ask": 7.65,
+            "bidSize": 55,
+            "askSize": 51,
+            "volume": 1435,
+            "openInterest": 6245,
+            "greeks": {
+              "delta": 0.42,
+              "gamma": 0.045,
+              "theta": -0.078,
+              "vega": 0.486,
+              "rho": 0.098
+            }
+          },
+          "put": {
+            "symbol": "AAPL250620P00175000",
+            "bid": 8.05,
+            "ask": 8.35,
+            "bidSize": 38,
+            "askSize": 47,
+            "volume": 1085,
+            "openInterest": 4125,
+            "greeks": {
+              "delta": -0.58,
+              "gamma": 0.045,
+              "theta": -0.074,
+              "vega": 0.486,
+              "rho": -0.132
+            }
+          }
+        },
+        {
+          "strike": 180.0,
+          "call": {
+            "symbol": "AAPL250620C00180000",
+            "bid": 5.15,
+            "ask": 5.45,
+            "bidSize": 58,
+            "askSize": 54,
+            "volume": 1325,
+            "openInterest": 5625,
+            "greeks": {
+              "delta": 0.34,
+              "gamma": 0.044,
+              "theta": -0.075,
+              "vega": 0.475,
+              "rho": 0.082
+            }
+          },
+          "put": {
+            "symbol": "AAPL250620P00180000",
+            "bid": 10.85,
+            "ask": 11.15,
+            "bidSize": 42,
+            "askSize": 51,
+            "volume": 965,
+            "openInterest": 3745,
+            "greeks": {
+              "delta": -0.66,
+              "gamma": 0.044,
+              "theta": -0.072,
+              "vega": 0.475,
+              "rho": -0.142
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
