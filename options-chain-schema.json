@@ -1,0 +1,173 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "OptionsChain",
+  "description": "Schema for representing options chain data",
+  "type": "object",
+  "required": ["symbol", "lastPrice", "lastUpdate", "expirations"],
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "description": "The stock symbol"
+    },
+    "lastPrice": {
+      "type": "number",
+      "description": "The last price of the underlying stock"
+    },
+    "lastUpdate": {
+      "type": "string",
+      "format": "date-time",
+      "description": "The timestamp of the last update"
+    },
+    "expirations": {
+      "type": "array",
+      "description": "List of option expirations",
+      "items": {
+        "type": "object",
+        "required": ["date", "options"],
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date",
+            "description": "Expiration date"
+          },
+          "options": {
+            "type": "array",
+            "description": "List of options at this expiration",
+            "items": {
+              "type": "object",
+              "required": ["strike", "call", "put"],
+              "properties": {
+                "strike": {
+                  "type": "number",
+                  "description": "The strike price"
+                },
+                "call": {
+                  "type": "object",
+                  "description": "Call option data",
+                  "required": ["symbol", "bid", "ask", "bidSize", "askSize", "volume", "openInterest", "greeks"],
+                  "properties": {
+                    "symbol": {
+                      "type": "string",
+                      "description": "Option symbol"
+                    },
+                    "bid": {
+                      "type": "number",
+                      "description": "Best bid price"
+                    },
+                    "ask": {
+                      "type": "number",
+                      "description": "Best ask price"
+                    },
+                    "bidSize": {
+                      "type": "integer",
+                      "description": "Bid size"
+                    },
+                    "askSize": {
+                      "type": "integer",
+                      "description": "Ask size"
+                    },
+                    "volume": {
+                      "type": "integer",
+                      "description": "Trading volume"
+                    },
+                    "openInterest": {
+                      "type": "integer",
+                      "description": "Open interest"
+                    },
+                    "greeks": {
+                      "type": "object",
+                      "required": ["delta", "gamma", "theta", "vega", "rho"],
+                      "properties": {
+                        "delta": {
+                          "type": "number",
+                          "description": "Delta greek"
+                        },
+                        "gamma": {
+                          "type": "number",
+                          "description": "Gamma greek"
+                        },
+                        "theta": {
+                          "type": "number",
+                          "description": "Theta greek"
+                        },
+                        "vega": {
+                          "type": "number",
+                          "description": "Vega greek"
+                        },
+                        "rho": {
+                          "type": "number",
+                          "description": "Rho greek"
+                        }
+                      }
+                    }
+                  }
+                },
+                "put": {
+                  "type": "object",
+                  "description": "Put option data",
+                  "required": ["symbol", "bid", "ask", "bidSize", "askSize", "volume", "openInterest", "greeks"],
+                  "properties": {
+                    "symbol": {
+                      "type": "string",
+                      "description": "Option symbol"
+                    },
+                    "bid": {
+                      "type": "number",
+                      "description": "Best bid price"
+                    },
+                    "ask": {
+                      "type": "number",
+                      "description": "Best ask price"
+                    },
+                    "bidSize": {
+                      "type": "integer",
+                      "description": "Bid size"
+                    },
+                    "askSize": {
+                      "type": "integer",
+                      "description": "Ask size"
+                    },
+                    "volume": {
+                      "type": "integer",
+                      "description": "Trading volume"
+                    },
+                    "openInterest": {
+                      "type": "integer",
+                      "description": "Open interest"
+                    },
+                    "greeks": {
+                      "type": "object",
+                      "required": ["delta", "gamma", "theta", "vega", "rho"],
+                      "properties": {
+                        "delta": {
+                          "type": "number",
+                          "description": "Delta greek"
+                        },
+                        "gamma": {
+                          "type": "number",
+                          "description": "Gamma greek"
+                        },
+                        "theta": {
+                          "type": "number",
+                          "description": "Theta greek"
+                        },
+                        "vega": {
+                          "type": "number",
+                          "description": "Vega greek"
+                        },
+                        "rho": {
+                          "type": "number",
+                          "description": "Rho greek"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
