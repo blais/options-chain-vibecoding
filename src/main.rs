@@ -17,8 +17,9 @@ use tui::{
     style::{Color, Modifier, Style},
     // symbols,
     text::{Span, Spans},
-    widgets::{Block, Borders, Cell, Row, Table, Tabs},
-    Frame, Terminal,
+    widgets::{Block, Borders, Cell, Row, Table},
+    Frame,
+    Terminal,
 };
 
 // Define the structs that match our JSON schema
@@ -73,7 +74,8 @@ struct OptionsChain {
 struct App {
     options_chain: OptionsChain,
     expanded_expirations: Vec<bool>, // Track which expirations are expanded
-    current_tab: usize,              // Currently selected expiration
+    cursor_position: usize,          // Current cursor position
+    scroll_offset: usize,            // Scroll offset for viewing expirations
     show_greeks: bool,               // Toggle to show/hide greeks
 }
 
@@ -82,16 +84,17 @@ impl App {
         let expiration_count = options_chain.expirations.len();
         App {
             options_chain,
-            expanded_expirations: vec![true; expiration_count], // Start with all expanded
-            current_tab: 0,
+            expanded_expirations: vec![false; expiration_count], // Start with all collapsed
+            cursor_position: 0,
+            scroll_offset: 0,
             show_greeks: true,
         }
     }
 
     fn toggle_current_expiration(&mut self) {
-        if self.current_tab < self.expanded_expirations.len() {
-            self.expanded_expirations[self.current_tab] =
-                !self.expanded_expirations[self.current_tab];
+        if self.cursor_position < self.expanded_expirations.len() {
+            self.expanded_expirations[self.cursor_position] =
+                !self.expanded_expirations[self.cursor_position];
         }
     }
 
@@ -99,16 +102,50 @@ impl App {
         self.show_greeks = !self.show_greeks;
     }
 
-    fn next_tab(&mut self) {
+    fn move_cursor_down(&mut self) {
         if !self.expanded_expirations.is_empty() {
-            self.current_tab = (self.current_tab + 1) % self.expanded_expirations.len();
+            self.cursor_position = (self.cursor_position + 1) % self.expanded_expirations.len();
+            self.adjust_scroll();
         }
     }
 
-    fn prev_tab(&mut self) {
+    fn move_cursor_up(&mut self) {
         if !self.expanded_expirations.is_empty() {
-            self.current_tab = (self.current_tab + self.expanded_expirations.len() - 1)
+            self.cursor_position = (self.cursor_position + self.expanded_expirations.len() - 1)
                 % self.expanded_expirations.len();
+            self.adjust_scroll();
+        }
+    }
+
+    fn page_down(&mut self) {
+        if !self.expanded_expirations.is_empty() {
+            // Move cursor down by 5 positions (or to the end)
+            let new_pos = std::cmp::min(
+                self.cursor_position + 5,
+                self.expanded_expirations.len() - 1,
+            );
+            self.cursor_position = new_pos;
+            self.adjust_scroll();
+        }
+    }
+
+    fn page_up(&mut self) {
+        if !self.expanded_expirations.is_empty() {
+            // Move cursor up by 5 positions (or to the beginning)
+            self.cursor_position = self.cursor_position.saturating_sub(5);
+            self.adjust_scroll();
+        }
+    }
+
+    // Adjust scroll offset to keep cursor visible
+    fn adjust_scroll(&mut self) {
+        // Keep cursor within visible area (assuming ~10 visible items)
+        const VISIBLE_ITEMS: usize = 10;
+
+        if self.cursor_position < self.scroll_offset {
+            self.scroll_offset = self.cursor_position;
+        } else if self.cursor_position >= self.scroll_offset + VISIBLE_ITEMS {
+            self.scroll_offset = self.cursor_position - VISIBLE_ITEMS + 1;
         }
     }
 }
@@ -158,8 +195,10 @@ fn main() -> Result<(), Box<dyn Error>> {
                 KeyCode::Char('q') => break,
                 KeyCode::Char('e') | KeyCode::Enter => app.toggle_current_expiration(),
                 KeyCode::Char('g') => app.toggle_greeks(),
-                KeyCode::Right | KeyCode::Tab => app.next_tab(),
-                KeyCode::Left | KeyCode::BackTab => app.prev_tab(),
+                KeyCode::Down => app.move_cursor_down(),
+                KeyCode::Up => app.move_cursor_up(),
+                KeyCode::PageDown => app.page_down(),
+                KeyCode::PageUp => app.page_up(),
                 _ => {}
             }
         }
@@ -180,61 +219,141 @@ fn main() -> Result<(), Box<dyn Error>> {
 fn ui<B: Backend>(f: &mut Frame<B>, app: &App) {
     let size = f.size();
 
-    // Create top level layout
+    // Create main layout with just a title and content area
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .margin(1)
         .constraints([Constraint::Length(3), Constraint::Min(0)].as_ref())
         .split(size);
 
-    // Create the expiration date tabs
-    let expiration_tabs = app
-        .options_chain
-        .expirations
-        .iter()
-        .enumerate()
-        .map(|(i, exp)| {
-            let expanded = app.expanded_expirations[i];
-            let prefix = if expanded { "[-] " } else { "[+] " };
-            Spans::from(vec![Span::styled(
-                format!("{}{}", prefix, exp.date),
-                Style::default().fg(Color::Green),
-            )])
-        })
-        .collect();
-
-    let tabs = Tabs::new(expiration_tabs)
-        .block(Block::default().borders(Borders::ALL).title(format!(
-            "{} - ${:.2} - {}",
+    // Render title block
+    let title_block = Block::default()
+        .borders(Borders::ALL)
+        .title(format!(
+            "{} - ${:.2} - {} - Use ↑/↓/PgUp/PgDn to navigate, 'e' to expand/collapse, 'g' to toggle Greeks",
             app.options_chain.symbol, app.options_chain.last_price, app.options_chain.last_update
-        )))
-        .select(app.current_tab)
-        .style(Style::default().fg(Color::White))
-        .highlight_style(
+        ));
+    f.render_widget(title_block, chunks[0]);
+
+    // Render all expirations in the main area
+    render_expirations_list(f, app, chunks[1]);
+}
+
+fn render_expirations_list<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
+    let expirations = &app.options_chain.expirations;
+
+    // Determine visible range based on scroll offset
+    let visible_start = app.scroll_offset;
+    let visible_end = std::cmp::min(expirations.len(), visible_start + (area.height as usize));
+
+    // Calculate heights for visible expirations
+    let mut visible_expirations = Vec::new();
+    let mut constraints = Vec::new();
+    let mut total_min_height = 0;
+
+    for i in visible_start..visible_end {
+        visible_expirations.push(i);
+
+        // Calculate minimum height for this expiration
+        let mut height = 3; // Header + border
+
+        if app.expanded_expirations[i] {
+            // Add space for options table
+            height += expirations[i].options.len() as u16 + 2; // +2 for table header and padding
+        }
+
+        total_min_height += height;
+        constraints.push(Constraint::Min(height));
+    }
+
+    // If we have space left, make the last constraint take the remaining space
+    if !constraints.is_empty() && total_min_height < area.height {
+        let last_idx = constraints.len() - 1;
+        if let Constraint::Min(min_height) = constraints[last_idx] {
+            constraints[last_idx] = Constraint::Min(min_height + (area.height - total_min_height));
+        }
+    }
+
+    // Create layout for visible expirations
+    let chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints(constraints)
+        .split(area);
+
+    // Render visible expirations
+    for (chunk_idx, &exp_idx) in visible_expirations.iter().enumerate() {
+        let expiration = &expirations[exp_idx];
+        let expanded = app.expanded_expirations[exp_idx];
+        let prefix = if expanded { "[-] " } else { "[+] " };
+
+        // Style based on cursor position
+        let style = if exp_idx == app.cursor_position {
             Style::default()
                 .fg(Color::Yellow)
-                .add_modifier(Modifier::BOLD),
-        );
+                .add_modifier(Modifier::BOLD)
+        } else {
+            Style::default().fg(Color::Green)
+        };
 
-    f.render_widget(tabs, chunks[0]);
+        // Create the expiration header
+        let header = Spans::from(vec![Span::styled(
+            format!("{}{}", prefix, expiration.date),
+            style,
+        )]);
 
-    // If the current expiration is expanded, show its options
-    if app.current_tab < app.options_chain.expirations.len()
-        && app.expanded_expirations[app.current_tab]
-    {
-        let options_area = chunks[1];
-        render_options_table(f, app, options_area);
-    } else {
-        // Render a hint if current expiration is collapsed
-        let block = Block::default()
-            .title("Press 'e' to expand")
-            .borders(Borders::ALL);
-        f.render_widget(block, chunks[1]);
+        let border_style = if exp_idx == app.cursor_position {
+            Style::default().fg(Color::Yellow)
+        } else {
+            Style::default()
+        };
+
+        let expiration_block = Block::default()
+            .borders(Borders::ALL)
+            .border_style(border_style)
+            .title(header);
+
+        f.render_widget(expiration_block, chunks[chunk_idx]);
+
+        // If expanded, render the options table inside
+        if expanded {
+            let inner_area = Rect {
+                x: chunks[chunk_idx].x + 1,
+                y: chunks[chunk_idx].y + 1,
+                width: chunks[chunk_idx].width - 2,
+                height: chunks[chunk_idx].height - 2,
+            };
+
+            render_options_table(f, app, inner_area, exp_idx);
+        }
+    }
+
+    // Show scroll indicators if needed
+    if visible_start > 0 || visible_end < expirations.len() {
+        let scroll_text = format!("Scroll: {}/{}", app.cursor_position + 1, expirations.len());
+        let scroll_text_len = scroll_text.len();
+        let scroll_indicator = Spans::from(vec![Span::styled(
+            scroll_text,
+            Style::default().fg(Color::White),
+        )]);
+
+        let scroll_area = Rect {
+            x: area.x + area.width - scroll_text_len as u16 - 2,
+            y: area.y,
+            width: scroll_text_len as u16,
+            height: 1,
+        };
+
+        f.render_widget(tui::widgets::Paragraph::new(scroll_indicator), scroll_area);
     }
 }
 
-fn render_options_table<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
-    let current_expiration = &app.options_chain.expirations[app.current_tab];
+fn render_options_table<B: Backend>(
+    f: &mut Frame<B>,
+    app: &App,
+    area: Rect,
+    expiration_idx: usize,
+) {
+    let current_expiration = &app.options_chain.expirations[expiration_idx];
 
     // Define table widths based on whether we're showing greeks
     let mut constraints = vec![
@@ -379,13 +498,9 @@ fn render_options_table<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
         .collect::<Vec<_>>();
 
     // Create the table widget
-    let title = format!(
-        "Options Chain - {} - Toggle Greeks: 'g', Expand/Collapse: 'e'",
-        current_expiration.date
-    );
     let table = Table::new(rows)
         .header(header)
-        .block(Block::default().borders(Borders::ALL).title(title))
+        .block(Block::default())
         .widths(&constraints)
         .column_spacing(1);
 
