@@ -222,7 +222,6 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &App) {
     // Create main layout with just a title and content area
     let chunks = Layout::default()
         .direction(Direction::Vertical)
-        .margin(1)
         .constraints([Constraint::Length(3), Constraint::Min(0)].as_ref())
         .split(size);
 
